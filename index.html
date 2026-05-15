@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KaizenCode — Python Full Stack Developer</title>
+  <meta name="description" content="Maragada Venkateswara Reddy — Python Full Stack Developer from Visakhapatnam. Django, FastAPI, React, LLM integrations.">
+  <link rel="icon" href="assets/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Rubik:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ═══ HERO ═══ -->
+  <section id="hero">
+
+    <div id="mascot-scene">
+      <!--
+        BUG 4 FIX: #mascot-shadow is INSIDE #mascot-wrapper.
+        quickTo() targets the wrapper — shadow must be a child
+        so it moves with the cursor lean. As a sibling it would
+        stay centred while the mascot drifted, creating a floaty
+        disconnected look.
+      -->
+      <div id="mascot-wrapper">
+        <img
+          id="mascot-img"
+          src="assets/mascot/wave.png"
+          alt="KaizenCode red panda mascot"
+          width="240"
+          height="240"
+        >
+        <!-- Speech bubble — display:none; GSAP sets display:block before animating -->
+        <div id="speech-bubble" role="status" aria-live="polite">
+          <span id="speech-text"></span>
+        </div>
+        <!-- Shadow lives inside wrapper so lean carries it -->
+        <div id="mascot-shadow" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <div id="hero-text">
+      <p class="label">// Python Full Stack Developer</p>
+      <h1>Maragada<br>Venkateswara<br>Reddy</h1>
+      <p class="location">📍 Visakhapatnam, Andhra Pradesh</p>
+      <div class="tech-tags" aria-label="Tech stack">
+        <span>Python</span>
+        <span>Django</span>
+        <span>FastAPI</span>
+        <span>React</span>
+        <span>PostgreSQL</span>
+        <span>Docker</span>
+        <span>LLM / AI</span>
+      </div>
+      <div class="hero-links">
+        <a href="https://github.com/KaizenCode" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://pypi.org/user/KaizenCode" target="_blank" rel="noopener noreferrer">PyPI</a>
+      </div>
+    </div>
+
+  </section>
+
+  <!--
+    BUG 5 FIX: position:absolute (not fixed).
+    JS sets style.left and style.top using rect + scrollY
+    so the pill is anchored to the card in document space,
+    not the viewport. GSAP only handles opacity + x bounce.
+  -->
+  <div id="pointer-pill" aria-hidden="true">🐾 Check this one!</div>
+
+  <!-- ═══ REPOS ═══ -->
+  <section id="repos">
+    <h2><span class="mono">featured_projects</span></h2>
+    <div id="repo-grid" role="list">
+      <!-- Injected by mascot.js from data/repos.json -->
+    </div>
+  </section>
+
+  <!-- GSAP must load BEFORE mascot.js -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="mascot.js"></script>
+</body>
+</html>

@@ -1,0 +1,375 @@
+/* ═══════════════════════════════════════════════════════
+   GOLDEN RULE:
+   CSS = layout, color, typography ONLY.
+   GSAP owns ALL transforms and transitions on mascot
+   elements. Adding any CSS transition/animation to
+   #mascot-img, #mascot-wrapper, #speech-bubble will
+   conflict with GSAP and cause jank/flicker.
+═══════════════════════════════════════════════════════ */
+
+/* ─── DESIGN TOKENS ──────────────────────────────────── */
+:root {
+  --bg:       #0d1117;
+  --surface:  #161b22;
+  --surface2: #1c2128;
+  --border:   #30363d;
+  --accent:   #e36d2e;   /* Red panda orange       */
+  --best:     #f0c040;   /* Gold — best repo badge */
+  --text:     #e6edf3;
+  --muted:    #8b949e;
+  --radius:   10px;
+  --mascot-size: 240px;
+}
+
+/* ─── RESET ──────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Rubik', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  /* position:relative needed so #pointer-pill (position:absolute)
+     is correctly anchored in document space */
+  position: relative;
+  min-height: 100vh;
+}
+
+.mono { font-family: 'IBM Plex Mono', monospace; }
+
+/* ─── HERO ───────────────────────────────────────────── */
+#hero {
+  display: flex;
+  align-items: center;
+  gap: 60px;
+  padding: 80px 10vw 60px;
+  min-height: 100vh;
+}
+
+/* ─── MASCOT SCENE ───────────────────────────────────── */
+#mascot-scene {
+  flex-shrink: 0;
+  width: var(--mascot-size);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#mascot-wrapper {
+  position: relative;
+  width: var(--mascot-size);
+  /* ⚠️  Do NOT add CSS transform, transition, or animation here.
+         GSAP's quickTo() owns all transforms on this element. */
+}
+
+#mascot-img {
+  width: var(--mascot-size);
+  height: var(--mascot-size);
+  object-fit: contain;
+  display: block;
+  /* Keeps pixel-art sharp at any scale */
+  image-rendering: pixelated;
+  image-rendering: crisp-edges; /* Safari fallback */
+  /* ⚠️  No CSS transition — GSAP controls all transforms */
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Ground shadow — GSAP scales this on jump loop
+   Lives inside #mascot-wrapper so it moves with cursor lean */
+#mascot-shadow {
+  width: 110px;
+  height: 18px;
+  background: radial-gradient(
+    ellipse,
+    rgba(0, 0, 0, 0.5) 0%,
+    transparent 72%
+  );
+  border-radius: 50%;
+  margin: 0 auto;
+  transform-origin: center center;
+  /* No CSS transition — GSAP animates scaleX on jump */
+}
+
+/* ─── SPEECH BUBBLE ──────────────────────────────────── */
+#speech-bubble {
+  /* display:none — GSAP sets display:block before animating in.
+     Do NOT set display:flex or display:block here; GSAP manages it. */
+  display: none;
+  position: absolute;
+  top: 14px;
+  left: calc(var(--mascot-size) + 12px);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 10px 16px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: nowrap;
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.5);
+  z-index: 20;
+  /* transform-origin for GSAP scale animation */
+  transform-origin: left center;
+  /* ⚠️  No CSS transition — GSAP animates opacity, x, scale */
+  pointer-events: none;
+}
+
+/* Bubble tail — outer (border colour) */
+#speech-bubble::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 14px;
+  border: 8px solid transparent;
+  border-right-color: var(--border);
+}
+
+/* Bubble tail — inner (fill colour) */
+#speech-bubble::after {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 15px;
+  border: 7px solid transparent;
+  border-right-color: var(--surface2);
+}
+
+/* ─── HERO TEXT ──────────────────────────────────────── */
+#hero-text .label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  color: var(--accent);
+  margin-bottom: 14px;
+  letter-spacing: 0.03em;
+}
+
+#hero-text h1 {
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
+}
+
+.location {
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.tech-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.tech-tags span {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--muted);
+}
+
+.hero-links {
+  display: flex;
+  gap: 16px;
+}
+
+.hero-links a {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid var(--accent);
+  padding-bottom: 2px;
+  transition: opacity 0.15s ease;
+}
+
+.hero-links a:hover { opacity: 0.75; }
+
+/* ─── POINTER PILL ───────────────────────────────────── */
+/*
+  BUG 5 FIX: position:absolute (not fixed).
+  JS positions via style.left / style.top using
+  getBoundingClientRect() + window.scrollY.
+  GSAP only adds translateX for the bounce offset.
+  This anchors the pill to the card in document space.
+*/
+#pointer-pill {
+  display: none;        /* GSAP sets display:flex when needed */
+  position: absolute;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent);
+  color: #fff;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 20px;
+  pointer-events: none;
+  z-index: 200;
+  white-space: nowrap;
+  box-shadow: 0 4px 18px rgba(227, 109, 46, 0.45);
+}
+
+/* ─── REPOS SECTION ──────────────────────────────────── */
+#repos {
+  padding: 60px 10vw 100px;
+}
+
+#repos h2 {
+  font-size: 1.05rem;
+  color: var(--muted);
+  margin-bottom: 32px;
+  letter-spacing: 0.04em;
+}
+
+#repo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.repo-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  cursor: default;
+  /* ⚠️  No CSS transition — GSAP handles all hover animation */
+  role: listitem;
+}
+
+/* Best repo — gold border */
+.repo-card[data-tier="best"] {
+  border-color: var(--best);
+}
+
+/* High repo — muted orange border, with modern-browser color-mix
+   and a hardcoded fallback for older browsers               */
+.repo-card[data-tier="high"] {
+  border-color: #7a4a2f;                                         /* fallback */
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+}
+
+.repo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.repo-header h3 {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.stars {
+  font-size: 12px;
+  color: var(--best);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.repo-card > p {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.65;
+  margin-bottom: 14px;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.tags span {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  background: var(--surface2);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+
+.repo-link {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--accent);
+  text-decoration: none;
+  display: inline-block;
+}
+
+.repo-link:hover { text-decoration: underline; }
+
+/* ─── SCROLLBAR (optional polish) ───────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ─── RESPONSIVE ─────────────────────────────────────── */
+@media (max-width: 860px) {
+  #hero {
+    flex-direction: column;
+    align-items: center;
+    padding: 50px 6vw 40px;
+    text-align: center;
+    gap: 32px;
+  }
+
+  .tech-tags,
+  .hero-links {
+    justify-content: center;
+  }
+
+  /*
+    BUG 8 FIX: On mobile, speech bubble is repositioned
+    ABOVE the mascot via CSS. JS detects mobile and skips
+    the x/scale GSAP transforms that would conflict with
+    this CSS positioning. Only opacity is animated on mobile.
+  */
+  #speech-bubble {
+    left: 50%;
+    top: -72px;
+    transform: translateX(-50%);
+    white-space: normal;
+    max-width: 240px;
+    text-align: left;
+    /* transform-origin irrelevant on mobile since GSAP
+       only animates opacity — no x/scale transform */
+    transform-origin: center bottom;
+  }
+
+  /* Hide the side-pointing tail on mobile */
+  #speech-bubble::before,
+  #speech-bubble::after {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  :root { --mascot-size: 180px; }
+  #hero { padding: 40px 5vw 30px; }
+  #hero-text h1 { font-size: 2rem; }
+  #repos { padding: 40px 5vw 60px; }
+  #repo-grid { grid-template-columns: 1fr; }
+}
