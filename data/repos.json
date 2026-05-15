@@ -1,0 +1,42 @@
+[
+  {
+    "name": "context-diff",
+    "description": "VS Code extension tracking how two devs explore a codebase — AI-powered blindspot reports",
+    "stars": 0,
+    "url": "https://github.com/KaizenCode/context-diff",
+    "tags": ["TypeScript", "FastAPI", "React"],
+    "tier": "best"
+  },
+  {
+    "name": "django-fastify",
+    "description": "FastAPI-style routing, dependency injection & OpenAPI for Django — 6,200+ lines, 29 files",
+    "stars": 0,
+    "url": "https://github.com/KaizenCode/django-fastify",
+    "tags": ["Python", "Django", "PyPI"],
+    "tier": "high"
+  },
+  {
+    "name": "omniroute",
+    "description": "Universal free LLM router with multi-tier complexity classifier and npm package",
+    "stars": 0,
+    "url": "https://github.com/KaizenCode/omniroute",
+    "tags": ["TypeScript", "npm", "LLM"],
+    "tier": "high"
+  },
+  {
+    "name": "TubeScope",
+    "description": "YouTube channel dashboard with AI summaries and yt-dlp download support",
+    "stars": 0,
+    "url": "https://github.com/KaizenCode/tubescope",
+    "tags": ["FastAPI", "yt-dlp", "OpenRouter"],
+    "tier": "high"
+  },
+  {
+    "name": "PrepMind AI",
+    "description": "Single-file exam prep dashboard — practice questions, doubt chat, progress tracking",
+    "stars": 0,
+    "url": "https://github.com/KaizenCode/prepmind-ai",
+    "tags": ["Vanilla JS", "Claude API"],
+    "tier": "low"
+  }
+]
