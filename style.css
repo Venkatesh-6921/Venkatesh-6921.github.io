@@ -33,6 +33,12 @@ body {
   color: var(--text);
   overflow-x: hidden;
   position: relative;
+  cursor: none;
+}
+
+@media (hover: none) {
+  body { cursor: auto; }
+  #cursor-dot, #cursor-ring { display: none !important; }
 }
 
 .mono { font-family: 'IBM Plex Mono', monospace; }
@@ -421,6 +427,41 @@ body {
   border-top: 1px solid var(--border2);
   color: var(--muted2);
   font-size: 13px;
+}
+
+/* ─── CUSTOM CURSOR ──────────────────────────────────── */
+#cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10000;
+  transform: translate(-50%, -50%);
+}
+
+#cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 36px;
+  height: 36px;
+  border: 2px solid rgba(227, 109, 46, 0.45);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-50%, -50%);
+}
+
+#cursor-ring.cursor-magnetic {
+  width: 52px;
+  height: 52px;
+  border-color: var(--best);
+  border-width: 2.5px;
+  background: rgba(240, 192, 64, 0.08);
 }
 
 /* ─── SCROLLBAR ──────────────────────────────────────── */

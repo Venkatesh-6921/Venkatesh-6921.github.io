@@ -40,6 +40,12 @@ const EMOTIONS = {
     msgDuration: 3000,
     loop: 'bob',
   },
+  happy_alt: {
+    img: 'assets/mascot/happy_alt.png',
+    msg: "Yeah, this one's pretty cool too! 😄",
+    msgDuration: 2500,
+    loop: 'bob',
+  },
   curious: {
     img: 'assets/mascot/curious.png',
     msg: "Hmm... exploring? 🔍",
@@ -62,6 +68,18 @@ const EMOTIONS = {
     img: 'assets/mascot/neutral.png',
     msg: '',
     msgDuration: 0,
+    loop: 'float',
+  },
+  relaxed: {
+    img: 'assets/mascot/relaxed.png',
+    msg: '',
+    msgDuration: 0,
+    loop: 'float',
+  },
+  sleeping: {
+    img: 'assets/mascot/sleeping.png',
+    msg: 'Zzz... wake me up! 💤',
+    msgDuration: 3000,
     loop: 'float',
   },
 };
@@ -119,6 +137,8 @@ let idleTimer       = null;
 let bubbleTimer     = null;
 let cardLeaveTimer  = null;   // FIX #3 & #10 — shared across ALL cards
 let isTransitioning = false;
+let deepIdleTimer   = null;   // triggers sleeping after 30s of inactivity
+let hoverHistory    = {};     // tracks consecutive hovers per card for alt variants
 
 // ═══════════════════════════════════════════════════════
 //  ELEMENT HELPERS  (called as functions to avoid
@@ -151,18 +171,18 @@ function setEmotion(name) {
   });
 
   tl
-    // 1. Exit — shrink + fade out
+    // 1. Exit — shrink + fade to 30% (crossfade overlap, not full blackout)
     .to(el(), {
-      scale: 0.75, opacity: 0,
-      duration: 0.14, ease: 'power2.in',
+      scale: 0.8, opacity: 0.3, scaleY: 1,
+      duration: 0.10, ease: 'power2.in',
     })
-    // 2. Swap src while invisible (no flicker)
+    // 2. Swap src while semi-transparent (soft crossfade, no hard cut)
     .call(() => { el().src = em.img; })
-    // 3. Enter — elastic overshoot pop
+    // 3. Enter — elastic overshoot pop from semi-visible
     .fromTo(el(),
-      { scale: 0.75, opacity: 0, rotation: -4 },
-      { scale: 1,    opacity: 1, rotation:  0,
-        duration: 0.5, ease: 'elastic.out(1.1, 0.55)' }
+      { scale: 0.8, opacity: 0.3, rotation: -3 },
+      { scale: 1,    opacity: 1,   rotation:  0,
+        duration: 0.45, ease: 'elastic.out(1.1, 0.55)' }
     )
     // Shadow pulses in sync, offset slightly behind for realism
     .to(sh(), {
@@ -236,6 +256,28 @@ function showBubble(msg, duration) {
 }
 
 // ═══════════════════════════════════════════════════════
+//  BLINK ANIMATION — random interval, scaleY squash
+// ═══════════════════════════════════════════════════════
+let blinkTimeout = null;
+
+function startBlinkLoop() {
+  const img = el();
+  if (!img) return;
+
+  function scheduleBlink() {
+    const delay = 2000 + Math.random() * 4000; // 2–6s random
+    blinkTimeout = setTimeout(() => {
+      if (isTransitioning) { scheduleBlink(); return; }
+      gsap.timeline()
+        .to(img, { scaleY: 0.1, duration: 0.08, ease: 'power2.in' })
+        .to(img, { scaleY: 1,   duration: 0.08, ease: 'power2.out' })
+        .eventCallback('onComplete', scheduleBlink);
+    }, delay);
+  }
+  scheduleBlink();
+}
+
+// ═══════════════════════════════════════════════════════
 //  IDLE LOOP — personality animation per emotion
 // ═══════════════════════════════════════════════════════
 function startIdleLoop(name) {
@@ -257,21 +299,21 @@ function startIdleLoop(name) {
         .to(img, { rotation:   0, duration: 0.30, ease: 'power1.out'   });
       break;
 
-    // JUMP — excited bounce with shadow compression
+    // JUMP — excited bounce with shadow compression + breathing
     // Shadow shrinks on ascent, expands on landing = grounded realism
     case 'jump':
       idleLoopTween = gsap.timeline({ repeat: -1, repeatDelay: 0.7 })
-        .to(img, { y: -30, scale: 1.07, duration: 0.28, ease: 'power2.out'  })
+        .to(img, { y: -30, scale: 1.07, scaleY: 1.03, duration: 0.28, ease: 'power2.out'  })
         .to(shd, { scaleX: 0.55, opacity: 0.12, duration: 0.28 }, '<')
-        .to(img, { y:   0, scale: 1,    duration: 0.36, ease: 'bounce.out' })
+        .to(img, { y:   0, scale: 1,    scaleY: 1,    duration: 0.36, ease: 'bounce.out' })
         .to(shd, { scaleX: 1,    opacity: 0.35, duration: 0.20 }, '<');
       break;
 
-    // BOB — smooth happy float
+    // BOB — smooth happy float with breathing
     case 'bob':
       idleLoopTween = gsap.timeline({ repeat: -1 })
-        .to(img, { y: -10, duration: 0.9, ease: 'sine.inOut' })
-        .to(img, { y:   0, duration: 0.9, ease: 'sine.inOut' });
+        .to(img, { y: -10, scaleY: 1.012, duration: 0.9, ease: 'sine.inOut' })
+        .to(img, { y:   0, scaleY: 1,     duration: 0.9, ease: 'sine.inOut' });
       break;
 
     // TILT — slow curious head rock
@@ -294,19 +336,19 @@ function startIdleLoop(name) {
         .to(img, { y: 0, rotation:  0, duration: 0.65, ease: 'power2.inOut', delay: 1.0 });
       break;
 
-    // TYPE — subtle rhythmic bob while coding
+    // TYPE — subtle rhythmic bob while coding + breathing
     case 'type':
       idleLoopTween = gsap.timeline({ repeat: -1 })
-        .to(img, { y: -4, duration: 0.32, ease: 'power1.inOut' })
-        .to(img, { y:  0, duration: 0.32, ease: 'power1.inOut' });
+        .to(img, { y: -4, scaleY: 1.01, duration: 0.32, ease: 'power1.inOut' })
+        .to(img, { y:  0, scaleY: 1,    duration: 0.32, ease: 'power1.inOut' });
       break;
 
     // FLOAT — slow levitate for neutral/default state
     case 'float':
     default:
       idleLoopTween = gsap.timeline({ repeat: -1 })
-        .to(img, { y: -9, duration: 2.2, ease: 'sine.inOut' })
-        .to(img, { y:  0, duration: 2.2, ease: 'sine.inOut' });
+        .to(img, { y: -9, scaleY: 1.015, duration: 2.2, ease: 'sine.inOut' })
+        .to(img, { y:  0, scaleY: 1,     duration: 2.2, ease: 'sine.inOut' });
       break;
   }
 }
@@ -353,6 +395,12 @@ function initCursorTracking() {
 // ═══════════════════════════════════════════════════════
 function resetIdleTimer() {
   clearTimeout(idleTimer);
+  clearTimeout(deepIdleTimer);
+
+  // Wake up from sleeping if any interaction occurs
+  if (currentEmotion === 'sleeping') {
+    setEmotion('neutral');
+  }
 
   // Allow re-triggering curious after it's already shown
   if (currentEmotion === 'curious') {
@@ -361,10 +409,17 @@ function resetIdleTimer() {
 
   idleTimer = setTimeout(() => {
     // Don't interrupt a repo-hover or leave-window state
-    if (!['excited', 'happy', 'disappointed', 'coding'].includes(currentEmotion)) {
+    if (!['excited', 'happy', 'disappointed', 'coding', 'sleeping'].includes(currentEmotion)) {
       setEmotion('curious');
     }
   }, 5000);
+
+  // Deep idle: sleeping after 30s of zero interaction
+  deepIdleTimer = setTimeout(() => {
+    if (!['excited', 'happy', 'disappointed', 'coding'].includes(currentEmotion)) {
+      setEmotion('sleeping');
+    }
+  }, 30000);
 }
 
 // ═══════════════════════════════════════════════════════
@@ -442,6 +497,35 @@ function runGreetingSequence() {
 }
 
 // ═══════════════════════════════════════════════════════
+//  DYNAMIC TIER ASSIGNMENT — star-count based emotions
+// ═══════════════════════════════════════════════════════
+function assignTiers(repos) {
+  const maxStars = Math.max(...repos.map(r => r.stars));
+
+  // All repos have 0 stars — preserve existing hierarchy by index
+  if (maxStars === 0) {
+    repos.forEach((repo, i) => {
+      if (i === 0)               repo.tier = 'best';
+      else if (i <= repos.length - 2) repo.tier = 'high';
+      else                        repo.tier = 'low';
+    });
+    return;
+  }
+
+  repos.forEach((repo) => {
+    if (repo.stars >= 100)      repo.tier = 'best';
+    else if (repo.stars >= 20)  repo.tier = 'high';
+    else                        repo.tier = 'low';
+  });
+
+  // If no repo qualified as 'best', promote the highest-starred one
+  if (!repos.some(r => r.tier === 'best')) {
+    const top = repos.reduce((a, b) => a.stars > b.stars ? a : b);
+    top.tier = 'best';
+  }
+}
+
+// ═══════════════════════════════════════════════════════
 //  REPO CARDS
 // ═══════════════════════════════════════════════════════
 async function loadRepos() {
@@ -457,6 +541,9 @@ async function loadRepos() {
     console.warn('[mascot] repos.json failed — using fallback data.', err.message);
     repos = FALLBACK_REPOS;
   }
+
+  // Assign tiers dynamically based on star counts
+  assignTiers(repos);
 
   const grid = document.getElementById('repo-grid');
 
@@ -499,10 +586,26 @@ async function loadRepos() {
       // immediately after card A doesn't get neutral fired 600ms later
       clearTimeout(cardLeaveTimer);
       clearTimeout(idleTimer);
+      clearTimeout(deepIdleTimer);
 
-      if (repo.tier === 'best')      setEmotion('excited');
-      else if (repo.tier === 'high') setEmotion('happy');
-      else                           setEmotion('disappointed');
+      // Track consecutive hovers for alt variant selection
+      hoverHistory[repo.name] = (hoverHistory[repo.name] || 0) + 1;
+
+      let emotion;
+      if (repo.tier === 'best')      emotion = 'excited';
+      else if (repo.tier === 'high') emotion = 'happy';
+      else                           emotion = 'disappointed';
+
+      // On 2nd+ consecutive hover of same card, try alt variant
+      if (hoverHistory[repo.name] >= 2) {
+        const altMap = { excited: 'excited', happy: 'happy_alt', disappointed: 'disappointed' };
+        const altEmotion = altMap[emotion];
+        if (altEmotion && EMOTIONS[altEmotion]) {
+          emotion = altEmotion;
+        }
+      }
+
+      setEmotion(emotion);
 
       gsap.to(card, {
         y: -7,
@@ -531,6 +634,66 @@ async function loadRepos() {
 }
 
 // ═══════════════════════════════════════════════════════
+//  CUSTOM CURSOR — dot + trailing ring with magnetic pull
+// ═══════════════════════════════════════════════════════
+function initCustomCursor() {
+  const dot  = document.getElementById('cursor-dot');
+  const ring = document.getElementById('cursor-ring');
+  if (!dot || !ring) return;
+
+  const dotX  = gsap.quickTo(dot, 'left',  { duration: 0,     ease: 'none' });
+  const dotY  = gsap.quickTo(dot, 'top',   { duration: 0,     ease: 'none' });
+  const ringX = gsap.quickTo(ring, 'left', { duration: 0.35,  ease: 'power3.out' });
+  const ringY = gsap.quickTo(ring, 'top',  { duration: 0.35,  ease: 'power3.out' });
+
+  let magneticTween = null;
+
+  document.addEventListener('mousemove', (e) => {
+    dotX(e.clientX);
+    dotY(e.clientY);
+    ringX(e.clientX);
+    ringY(e.clientY);
+  });
+
+  document.addEventListener('mouseleave', () => {
+    gsap.set([dot, ring], { opacity: 0 });
+  });
+
+  document.addEventListener('mouseenter', () => {
+    gsap.set([dot, ring], { opacity: 1 });
+  });
+
+  gsap.set([dot, ring], { opacity: 1 });
+
+  function applyMagnetic(card) {
+    const rect = card.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top  + rect.height / 2;
+
+    if (magneticTween) magneticTween.kill();
+    magneticTween = gsap.to(ring, {
+      left: cx,
+      top: cy,
+      duration: 0.5,
+      ease: 'elastic.out(1, 0.5)',
+    });
+    ring.classList.add('cursor-magnetic');
+  }
+
+  function releaseMagnetic() {
+    if (magneticTween) { magneticTween.kill(); magneticTween = null; }
+    ring.classList.remove('cursor-magnetic');
+  }
+
+  document.querySelectorAll('.repo-card[data-tier="best"]').forEach((card) => {
+    card.addEventListener('mouseenter', () => applyMagnetic(card));
+    card.addEventListener('mouseleave', () => releaseMagnetic());
+  });
+
+  return { applyMagnetic, releaseMagnetic };
+}
+
+// ═══════════════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', async () => {
@@ -545,6 +708,8 @@ window.addEventListener('DOMContentLoaded', async () => {
   // loadRepos is wrapped in try-catch (FIX #7) so this await is safe
   await loadRepos();
   initCursorTracking();
+  initCustomCursor();
+  startBlinkLoop();
 
   if (!sessionStorage.getItem('kc_visited')) {
     sessionStorage.setItem('kc_visited', '1');
