@@ -15,31 +15,25 @@
 </head>
 <body>
 
+  <!-- ═══ MASCOT (fixed, follows cursor) ═══ -->
+  <div id="mascot-col">
+    <div id="speech-bubble" role="status" aria-live="polite">
+      <span id="speech-text"></span>
+    </div>
+    <div id="mascot-wrapper">
+      <img
+        id="mascot-img"
+        src="assets/mascot/wave.png"
+        alt="KaizenCode red panda mascot"
+        width="160"
+        height="160"
+      >
+      <div id="mascot-shadow" aria-hidden="true"></div>
+    </div>
+  </div>
+
   <!-- ═══ HERO ═══ -->
   <section id="hero">
-
-    <!-- LEFT — Mascot column -->
-    <div id="mascot-col">
-
-      <!-- Speech bubble sits ABOVE the mascot, never overlaps text -->
-      <div id="speech-bubble" role="status" aria-live="polite">
-        <span id="speech-text"></span>
-      </div>
-
-      <div id="mascot-wrapper">
-        <img
-          id="mascot-img"
-          src="assets/mascot/wave.png"
-          alt="KaizenCode red panda mascot"
-          width="320"
-          height="320"
-        >
-        <div id="mascot-shadow" aria-hidden="true"></div>
-      </div>
-
-    </div>
-
-    <!-- RIGHT — Text column -->
     <div id="hero-text">
 
       <div class="label-row">
@@ -96,9 +90,6 @@
   <footer id="footer">
     <p class="mono">// built with ❤️ + 🐾 by KaizenCode · Visakhapatnam</p>
   </footer>
-
-  <div id="cursor-dot" aria-hidden="true"></div>
-  <div id="cursor-ring" aria-hidden="true"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
   <script src="mascot.js"></script>

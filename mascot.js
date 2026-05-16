@@ -354,12 +354,15 @@ function startIdleLoop(name) {
 }
 
 // ═══════════════════════════════════════════════════════
-//  CURSOR TRACKING — gsap.quickTo()
-//  Pre-compiled functions called thousands of times per
-//  second on mousemove with zero overhead.
+//  CURSOR TRACKING — mascot follows cursor via gsap.quickTo()
+//  Mascot is position:fixed, offset +80px right / -30px up from cursor.
 // ═══════════════════════════════════════════════════════
 function initCursorTracking() {
-  const wrapper = document.getElementById('mascot-wrapper');
+  const wrapper = document.getElementById('mascot-col');
+  if (!wrapper) return;
+
+  const OFFSET_X = 80;
+  const OFFSET_Y = -30;
 
   const xTo   = gsap.quickTo(wrapper, 'x',        { duration: 0.75, ease: 'power3.out' });
   const yTo   = gsap.quickTo(wrapper, 'y',        { duration: 0.75, ease: 'power3.out' });
@@ -368,25 +371,22 @@ function initCursorTracking() {
   document.addEventListener('mousemove', (e) => {
     const cx = window.innerWidth  / 2;
     const cy = window.innerHeight / 2;
-    // Normalise to -1..+1 relative to screen centre
     const dx = (e.clientX - cx) / cx;
     const dy = (e.clientY - cy) / cy;
 
-    xTo(dx * 20);       // max 20px horizontal lean
-    yTo(dy * 11);       // max 11px vertical lean
-    rotTo(dx * 5.5);    // max 5.5° tilt
+    xTo(e.clientX + OFFSET_X);
+    yTo(e.clientY + OFFSET_Y);
+    rotTo(dx * 5.5);
 
     resetIdleTimer();
   });
 
   document.addEventListener('mouseleave', () => {
-    // Reset lean when cursor exits browser window
-    xTo(0); yTo(0); rotTo(0);
     setEmotion('coding');
   });
 
   document.addEventListener('mouseenter', () => {
-    setEmotion('neutral');
+    if (currentEmotion === 'coding') setEmotion('neutral');
   });
 }
 
@@ -430,15 +430,11 @@ function runGreetingSequence() {
 
   gsap.timeline()
 
-    // Elastic bounce-in entrance from below
-    .from('#mascot-wrapper', {
-      y: 90, opacity: 0, scale: 0.55,
+    // Fade-in entrance (mascot is fixed at cursor position)
+    .from('#mascot-col', {
+      opacity: 0, scale: 0.55,
       duration: 1.15,
       ease: 'elastic.out(1, 0.5)',
-      // FIX #6: set wave state DIRECTLY inside the entrance animation.
-      // The img src is already wave.png so we must NOT call setEmotion('wave')
-      // (which would scale-down → swap same file → pop = pointless jitter).
-      // Instead we manually initialise state and start the idle loop.
       onStart: () => {
         currentEmotion = 'wave';
         showBubble(EMOTIONS.wave.msg, EMOTIONS.wave.msgDuration);
@@ -456,13 +452,6 @@ function runGreetingSequence() {
       const bestCard = document.querySelector('[data-tier="best"]');
       if (!bestCard) return;
 
-      // FIX #5: position pill using style.left / style.top anchored in
-      // document space (getBoundingClientRect + scrollY).
-      // GSAP's x is a translateX — a relative bounce offset on top of
-      // the CSS left position. This is correct.
-      // Old code used gsap.set(arrow, { x: rect.left, y: rect.top + scrollY })
-      // which stacked transforms onto default top:0, left:0, placing the pill
-      // at the wrong screen position on most layouts.
       const rect = bestCard.getBoundingClientRect();
       arrow.style.left = (rect.left + window.scrollX) + 'px';
       arrow.style.top  = (rect.top  + window.scrollY - 46) + 'px';
@@ -480,7 +469,6 @@ function runGreetingSequence() {
           onComplete: () => gsap.set(arrow, { display: 'none', x: 0 }),
         });
 
-      // Dismiss pill early if visitor reaches the best card
       bestCard.addEventListener('mouseenter', () => {
         gsap.to(arrow, {
           opacity: 0, y: -10, duration: 0.2,
@@ -609,7 +597,7 @@ async function loadRepos() {
 
       gsap.to(card, {
         y: -7,
-        boxShadow: '0 18px 44px rgba(0,0,0,0.55)',
+        boxShadow: '0 12px 32px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.06)',
         duration: 0.25, ease: 'power2.out',
       });
     });
@@ -634,66 +622,6 @@ async function loadRepos() {
 }
 
 // ═══════════════════════════════════════════════════════
-//  CUSTOM CURSOR — dot + trailing ring with magnetic pull
-// ═══════════════════════════════════════════════════════
-function initCustomCursor() {
-  const dot  = document.getElementById('cursor-dot');
-  const ring = document.getElementById('cursor-ring');
-  if (!dot || !ring) return;
-
-  const dotX  = gsap.quickTo(dot, 'left',  { duration: 0,     ease: 'none' });
-  const dotY  = gsap.quickTo(dot, 'top',   { duration: 0,     ease: 'none' });
-  const ringX = gsap.quickTo(ring, 'left', { duration: 0.35,  ease: 'power3.out' });
-  const ringY = gsap.quickTo(ring, 'top',  { duration: 0.35,  ease: 'power3.out' });
-
-  let magneticTween = null;
-
-  document.addEventListener('mousemove', (e) => {
-    dotX(e.clientX);
-    dotY(e.clientY);
-    ringX(e.clientX);
-    ringY(e.clientY);
-  });
-
-  document.addEventListener('mouseleave', () => {
-    gsap.set([dot, ring], { opacity: 0 });
-  });
-
-  document.addEventListener('mouseenter', () => {
-    gsap.set([dot, ring], { opacity: 1 });
-  });
-
-  gsap.set([dot, ring], { opacity: 1 });
-
-  function applyMagnetic(card) {
-    const rect = card.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top  + rect.height / 2;
-
-    if (magneticTween) magneticTween.kill();
-    magneticTween = gsap.to(ring, {
-      left: cx,
-      top: cy,
-      duration: 0.5,
-      ease: 'elastic.out(1, 0.5)',
-    });
-    ring.classList.add('cursor-magnetic');
-  }
-
-  function releaseMagnetic() {
-    if (magneticTween) { magneticTween.kill(); magneticTween = null; }
-    ring.classList.remove('cursor-magnetic');
-  }
-
-  document.querySelectorAll('.repo-card[data-tier="best"]').forEach((card) => {
-    card.addEventListener('mouseenter', () => applyMagnetic(card));
-    card.addEventListener('mouseleave', () => releaseMagnetic());
-  });
-
-  return { applyMagnetic, releaseMagnetic };
-}
-
-// ═══════════════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════════════
 window.addEventListener('DOMContentLoaded', async () => {
@@ -708,7 +636,6 @@ window.addEventListener('DOMContentLoaded', async () => {
   // loadRepos is wrapped in try-catch (FIX #7) so this await is safe
   await loadRepos();
   initCursorTracking();
-  initCustomCursor();
   startBlinkLoop();
 
   if (!sessionStorage.getItem('kc_visited')) {
@@ -716,12 +643,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     runGreetingSequence();
   } else {
     // Return visit — quick entrance, short wave, then settle
-    gsap.from('#mascot-wrapper', {
-      y: 40, opacity: 0,
+    gsap.from('#mascot-col', {
+      opacity: 0, scale: 0.85,
       duration: 0.8, ease: 'power3.out',
       onComplete: () => {
-        // FIX #6: same direct-state init as greeting sequence —
-        // no swap animation since img is already wave.png
         currentEmotion = 'wave';
         showBubble(EMOTIONS.wave.msg, EMOTIONS.wave.msgDuration);
         startIdleLoop('wave');

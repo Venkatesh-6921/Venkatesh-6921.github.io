@@ -6,21 +6,21 @@
 
 /* ─── TOKENS ─────────────────────────────────────────── */
 :root {
-  --bg:        #0d1117;
-  --bg2:       #111318;
-  --surface:   #161b22;
-  --surface2:  #1c2128;
-  --border:    #30363d;
-  --border2:   #21262d;
+  --bg:        #ffffff;
+  --bg2:       #f6f8fa;
+  --surface:   #ffffff;
+  --surface2:  #f0f2f5;
+  --border:    #d0d7de;
+  --border2:   #e1e4e8;
   --accent:    #e36d2e;
   --accent2:   #f08040;
-  --best:      #f0c040;
-  --text:      #e6edf3;
-  --muted:     #8b949e;
-  --muted2:    #6e7681;
-  --green:     #3fb950;
+  --best:      #d4a017;
+  --text:      #1a1a2e;
+  --muted:     #656d76;
+  --muted2:    #8b949e;
+  --green:     #1a7f37;
   --radius:    12px;
-  --mascot:    320px;
+  --mascot:    160px;
 }
 
 /* ─── RESET ──────────────────────────────────────────── */
@@ -33,43 +33,43 @@ body {
   color: var(--text);
   overflow-x: hidden;
   position: relative;
-  cursor: none;
 }
 
 @media (hover: none) {
-  body { cursor: auto; }
-  #cursor-dot, #cursor-ring { display: none !important; }
+  #mascot-wrapper, #speech-bubble { display: none !important; }
 }
 
 .mono { font-family: 'IBM Plex Mono', monospace; }
 
 /* ─── HERO ───────────────────────────────────────────── */
 #hero {
-  display: grid;
-  /* Mascot left column fixed width, text fills right */
-  grid-template-columns: var(--mascot) 1fr;
-  align-items: center;
-  gap: 64px;
-  padding: 80px 8vw 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 120px 8vw 80px;
   min-height: 100vh;
-  max-width: 1200px;
+  max-width: 800px;
   margin: 0 auto;
 }
 
-/* ─── MASCOT COLUMN ──────────────────────────────────── */
+/* ─── MASCOT (fixed, follows cursor) ─────────────────── */
 #mascot-col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  /* Speech bubble above, mascot below — no overlap possible */
-  gap: 0;
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  pointer-events: none;
+  /* GSAP moves this via x/y transforms */
 }
 
 /* Speech bubble — ABOVE the mascot, centred on it */
 #speech-bubble {
   display: none;
-  position: relative;          /* stays in flow ABOVE mascot */
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: 14px;
@@ -78,14 +78,12 @@ body {
   font-size: 13px;
   line-height: 1.5;
   white-space: nowrap;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
   z-index: 20;
   transform-origin: center bottom;
   pointer-events: none;
   text-align: center;
-  /* min-width so short messages don't collapse */
   min-width: 160px;
-  margin-bottom: 12px;
 }
 
 /* Tail pointing DOWN toward mascot */
@@ -111,6 +109,7 @@ body {
 #mascot-wrapper {
   position: relative;
   width: var(--mascot);
+  height: var(--mascot);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -130,11 +129,11 @@ body {
 }
 
 #mascot-shadow {
-  width: 140px;
-  height: 20px;
-  background: radial-gradient(ellipse, rgba(0,0,0,0.55) 0%, transparent 70%);
+  width: 100px;
+  height: 16px;
+  background: radial-gradient(ellipse, rgba(0,0,0,0.18) 0%, transparent 70%);
   border-radius: 50%;
-  margin-top: -8px;
+  margin-top: -6px;
   transform-origin: center;
 }
 
@@ -183,7 +182,7 @@ body {
 
 .accent-name {
   /* Middle name gets a subtle accent gradient */
-  background: linear-gradient(90deg, var(--text) 0%, var(--accent2) 100%);
+  background: linear-gradient(90deg, var(--text) 0%, var(--accent) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -210,7 +209,7 @@ body {
   border: 1px solid var(--border);
   border-radius: 6px;
   color: var(--muted);
-  background: var(--surface);
+  background: var(--bg2);
   transition: border-color 0.2s, color 0.2s;
 }
 
@@ -238,12 +237,13 @@ body {
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--surface);
-  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  transition: border-color 0.2s, color 0.2s, background 0.2s, box-shadow 0.2s;
 }
 
 .hero-links a:hover {
   border-color: var(--accent);
   color: var(--text);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
 .hero-links .hire-btn {
@@ -275,7 +275,7 @@ body {
   pointer-events: none;
   z-index: 200;
   white-space: nowrap;
-  box-shadow: 0 4px 20px rgba(227,109,46,0.5);
+  box-shadow: 0 4px 20px rgba(227,109,46,0.30);
 }
 
 /* ─── DIVIDER ─────────────────────────────────────────── */
@@ -336,17 +336,19 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  /* ⚠️ NO CSS transition — GSAP animates hover */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+  transition: box-shadow 0.25s ease;
+  /* ⚠️ NO CSS transition on transform — GSAP animates hover */
 }
 
 .repo-card[data-tier="best"] {
   border-color: var(--best);
-  background: linear-gradient(135deg, var(--surface) 0%, #1a1810 100%);
+  background: linear-gradient(135deg, var(--surface) 0%, #fef9ed 100%);
+  box-shadow: 0 2px 8px rgba(212,160,23,0.10), 0 1px 3px rgba(0,0,0,0.04);
 }
 
 .repo-card[data-tier="high"] {
-  border-color: #3a2820;
-  border-color: color-mix(in srgb, var(--accent) 35%, var(--border2));
+  border-color: color-mix(in srgb, var(--accent) 25%, var(--border2));
 }
 
 .repo-header {
@@ -402,7 +404,7 @@ body {
   font-size: 11px;
   padding: 3px 9px;
   border-radius: 4px;
-  background: var(--surface2);
+  background: var(--bg2);
   color: var(--muted);
   border: 1px solid var(--border2);
 }
@@ -429,41 +431,6 @@ body {
   font-size: 13px;
 }
 
-/* ─── CUSTOM CURSOR ──────────────────────────────────── */
-#cursor-dot {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 8px;
-  height: 8px;
-  background: var(--accent);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 10000;
-  transform: translate(-50%, -50%);
-}
-
-#cursor-ring {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 36px;
-  height: 36px;
-  border: 2px solid rgba(227, 109, 46, 0.45);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9999;
-  transform: translate(-50%, -50%);
-}
-
-#cursor-ring.cursor-magnetic {
-  width: 52px;
-  height: 52px;
-  border-color: var(--best);
-  border-width: 2.5px;
-  background: rgba(240, 192, 64, 0.08);
-}
-
 /* ─── SCROLLBAR ──────────────────────────────────────── */
 ::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
@@ -471,31 +438,17 @@ body {
 
 /* ─── RESPONSIVE ─────────────────────────────────────── */
 @media (max-width: 900px) {
-  :root { --mascot: 260px; }
-
   #hero {
-    grid-template-columns: 1fr;
-    justify-items: center;
-    text-align: center;
-    padding: 60px 6vw 40px;
+    padding: 80px 6vw 40px;
     min-height: auto;
-    gap: 40px;
   }
 
-  #mascot-col { order: 1; }
-  #hero-text  { order: 2; align-items: center; }
-
-  /* On mobile: bubble above mascot with downward tail — no change needed,
-     already in flow. Just clear the nowrap so it wraps nicely. */
-  #speech-bubble { white-space: normal; max-width: 260px; }
-
-  .tech-tags, .hero-links { justify-content: center; }
+  .tech-tags, .hero-links { justify-content: flex-start; }
 
   #hero-text h1 { font-size: 2.4rem; }
 }
 
 @media (max-width: 560px) {
-  :root { --mascot: 220px; }
   #repos { padding: 40px 5vw 60px; }
   #repo-grid { grid-template-columns: 1fr; }
   #hero { padding: 40px 5vw 30px; }
