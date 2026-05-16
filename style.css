@@ -1,35 +1,30 @@
 /* ═══════════════════════════════════════════════════════
-   GOLDEN RULE:
-   CSS = layout, color, typography ONLY.
-   GSAP owns ALL transforms and transitions on mascot
-   elements. Adding any CSS transition/animation to
-   #mascot-img, #mascot-wrapper, #speech-bubble will
-   conflict with GSAP and cause jank/flicker.
+   GOLDEN RULE: GSAP owns ALL transforms on mascot elements.
+   Zero CSS transitions/animations on #mascot-img, #mascot-wrapper,
+   #speech-bubble — conflicts cause jank.
 ═══════════════════════════════════════════════════════ */
 
-/* ─── DESIGN TOKENS ──────────────────────────────────── */
+/* ─── TOKENS ─────────────────────────────────────────── */
 :root {
-  --bg:       #0d1117;
-  --surface:  #161b22;
-  --surface2: #1c2128;
-  --border:   #30363d;
-  --accent:   #e36d2e;   /* Red panda orange       */
-  --best:     #f0c040;   /* Gold — best repo badge */
-  --text:     #e6edf3;
-  --muted:    #8b949e;
-  --radius:   10px;
-  --mascot-size: 240px;
+  --bg:        #0d1117;
+  --bg2:       #111318;
+  --surface:   #161b22;
+  --surface2:  #1c2128;
+  --border:    #30363d;
+  --border2:   #21262d;
+  --accent:    #e36d2e;
+  --accent2:   #f08040;
+  --best:      #f0c040;
+  --text:      #e6edf3;
+  --muted:     #8b949e;
+  --muted2:    #6e7681;
+  --green:     #3fb950;
+  --radius:    12px;
+  --mascot:    320px;
 }
 
 /* ─── RESET ──────────────────────────────────────────── */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 
 body {
@@ -37,178 +32,230 @@ body {
   background: var(--bg);
   color: var(--text);
   overflow-x: hidden;
-  /* position:relative needed so #pointer-pill (position:absolute)
-     is correctly anchored in document space */
   position: relative;
-  min-height: 100vh;
 }
 
 .mono { font-family: 'IBM Plex Mono', monospace; }
 
 /* ─── HERO ───────────────────────────────────────────── */
 #hero {
-  display: flex;
+  display: grid;
+  /* Mascot left column fixed width, text fills right */
+  grid-template-columns: var(--mascot) 1fr;
   align-items: center;
-  gap: 60px;
-  padding: 80px 10vw 60px;
+  gap: 64px;
+  padding: 80px 8vw 80px;
   min-height: 100vh;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
-/* ─── MASCOT SCENE ───────────────────────────────────── */
-#mascot-scene {
-  flex-shrink: 0;
-  width: var(--mascot-size);
+/* ─── MASCOT COLUMN ──────────────────────────────────── */
+#mascot-col {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-#mascot-wrapper {
+  /* Speech bubble above, mascot below — no overlap possible */
+  gap: 0;
   position: relative;
-  width: var(--mascot-size);
-  /* ⚠️  Do NOT add CSS transform, transition, or animation here.
-         GSAP's quickTo() owns all transforms on this element. */
 }
 
-#mascot-img {
-  width: var(--mascot-size);
-  height: var(--mascot-size);
-  object-fit: contain;
-  display: block;
-  /* Keeps pixel-art sharp at any scale */
-  image-rendering: pixelated;
-  image-rendering: crisp-edges; /* Safari fallback */
-  /* ⚠️  No CSS transition — GSAP controls all transforms */
-  user-select: none;
-  -webkit-user-drag: none;
-}
-
-/* Ground shadow — GSAP scales this on jump loop
-   Lives inside #mascot-wrapper so it moves with cursor lean */
-#mascot-shadow {
-  width: 110px;
-  height: 18px;
-  background: radial-gradient(
-    ellipse,
-    rgba(0, 0, 0, 0.5) 0%,
-    transparent 72%
-  );
-  border-radius: 50%;
-  margin: 0 auto;
-  transform-origin: center center;
-  /* No CSS transition — GSAP animates scaleX on jump */
-}
-
-/* ─── SPEECH BUBBLE ──────────────────────────────────── */
+/* Speech bubble — ABOVE the mascot, centred on it */
 #speech-bubble {
-  /* display:none — GSAP sets display:block before animating in.
-     Do NOT set display:flex or display:block here; GSAP manages it. */
   display: none;
-  position: absolute;
-  top: 14px;
-  left: calc(var(--mascot-size) + 12px);
+  position: relative;          /* stays in flow ABOVE mascot */
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 10px 16px;
+  padding: 10px 18px;
   font-family: 'IBM Plex Mono', monospace;
   font-size: 13px;
   line-height: 1.5;
   white-space: nowrap;
-  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
   z-index: 20;
-  /* transform-origin for GSAP scale animation */
-  transform-origin: left center;
-  /* ⚠️  No CSS transition — GSAP animates opacity, x, scale */
+  transform-origin: center bottom;
   pointer-events: none;
-}
-
-/* Bubble tail — outer (border colour) */
-#speech-bubble::before {
-  content: '';
-  position: absolute;
-  left: -8px;
-  top: 14px;
-  border: 8px solid transparent;
-  border-right-color: var(--border);
-}
-
-/* Bubble tail — inner (fill colour) */
-#speech-bubble::after {
-  content: '';
-  position: absolute;
-  left: -6px;
-  top: 15px;
-  border: 7px solid transparent;
-  border-right-color: var(--surface2);
-}
-
-/* ─── HERO TEXT ──────────────────────────────────────── */
-#hero-text .label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 13px;
-  color: var(--accent);
-  margin-bottom: 14px;
-  letter-spacing: 0.03em;
-}
-
-#hero-text h1 {
-  font-size: clamp(2.2rem, 5vw, 4rem);
-  font-weight: 900;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
+  text-align: center;
+  /* min-width so short messages don't collapse */
+  min-width: 160px;
   margin-bottom: 12px;
 }
 
+/* Tail pointing DOWN toward mascot */
+#speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 10px solid transparent;
+  border-top-color: var(--surface2);
+}
+#speech-bubble::before {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 11px solid transparent;
+  border-top-color: var(--border);
+}
+
+#mascot-wrapper {
+  position: relative;
+  width: var(--mascot);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* ⚠️ NO CSS transforms — GSAP owns this */
+}
+
+#mascot-img {
+  width: var(--mascot);
+  height: var(--mascot);
+  object-fit: contain;
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  user-select: none;
+  -webkit-user-drag: none;
+  /* ⚠️ NO CSS transition */
+}
+
+#mascot-shadow {
+  width: 140px;
+  height: 20px;
+  background: radial-gradient(ellipse, rgba(0,0,0,0.55) 0%, transparent 70%);
+  border-radius: 50%;
+  margin-top: -8px;
+  transform-origin: center;
+}
+
+/* ─── HERO TEXT ──────────────────────────────────────── */
+#hero-text {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.label-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  flex-shrink: 0;
+  animation: pulse-dot 2s ease infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; box-shadow: 0 0 8px var(--green); }
+  50%       { opacity: 0.6; box-shadow: 0 0 16px var(--green); }
+}
+
+.label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+
+#hero-text h1 {
+  font-size: clamp(2.8rem, 4.5vw, 4.2rem);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  color: var(--text);
+}
+
+.accent-name {
+  /* Middle name gets a subtle accent gradient */
+  background: linear-gradient(90deg, var(--text) 0%, var(--accent2) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 .location {
-  color: var(--muted);
   font-size: 14px;
-  margin-bottom: 24px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .tech-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-bottom: 28px;
 }
 
 .tech-tags span {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 12px;
-  padding: 4px 10px;
+  padding: 5px 12px;
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 6px;
   color: var(--muted);
+  background: var(--surface);
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.tech-tags span:hover {
+  border-color: var(--accent);
+  color: var(--accent);
 }
 
 .hero-links {
   display: flex;
-  gap: 16px;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .hero-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   font-family: 'IBM Plex Mono', monospace;
   font-size: 13px;
-  color: var(--accent);
+  color: var(--muted);
   text-decoration: none;
-  border-bottom: 1px solid var(--accent);
-  padding-bottom: 2px;
-  transition: opacity 0.15s ease;
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
 }
 
-.hero-links a:hover { opacity: 0.75; }
+.hero-links a:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.hero-links .hire-btn {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+.hero-links .hire-btn:hover {
+  background: var(--accent2);
+  border-color: var(--accent2);
+  color: #fff;
+}
 
 /* ─── POINTER PILL ───────────────────────────────────── */
-/*
-  BUG 5 FIX: position:absolute (not fixed).
-  JS positions via style.left / style.top using
-  getBoundingClientRect() + window.scrollY.
-  GSAP only adds translateX for the bounce offset.
-  This anchors the pill to the card in document space.
-*/
 #pointer-pill {
-  display: none;        /* GSAP sets display:flex when needed */
+  display: none;
   position: absolute;
   align-items: center;
   gap: 6px;
@@ -217,98 +264,141 @@ body {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 12px;
   font-weight: 600;
-  padding: 6px 14px;
+  padding: 7px 16px;
   border-radius: 20px;
   pointer-events: none;
   z-index: 200;
   white-space: nowrap;
-  box-shadow: 0 4px 18px rgba(227, 109, 46, 0.45);
+  box-shadow: 0 4px 20px rgba(227,109,46,0.5);
+}
+
+/* ─── DIVIDER ─────────────────────────────────────────── */
+.divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--border) 20%,
+    var(--border) 80%,
+    transparent 100%
+  );
+  margin: 0;
 }
 
 /* ─── REPOS SECTION ──────────────────────────────────── */
 #repos {
-  padding: 60px 10vw 100px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 64px 8vw 80px;
 }
 
-#repos h2 {
-  font-size: 1.05rem;
-  color: var(--muted);
-  margin-bottom: 32px;
-  letter-spacing: 0.04em;
+.section-header {
+  margin-bottom: 36px;
 }
+
+.section-header h2 {
+  font-size: 1.1rem;
+  color: var(--muted);
+  font-weight: 400;
+  margin-bottom: 6px;
+}
+
+.section-sub {
+  font-size: 13px;
+  color: var(--muted2);
+}
+
+/* Blinking cursor in heading */
+.cursor-blink {
+  animation: blink 1.1s step-end infinite;
+  color: var(--accent);
+}
+@keyframes blink { 50% { opacity: 0; } }
 
 #repo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 16px;
 }
 
 .repo-card {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border2);
   border-radius: var(--radius);
-  padding: 22px;
+  padding: 24px;
   cursor: default;
-  /* ⚠️  No CSS transition — GSAP handles all hover animation */
-  role: listitem;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* ⚠️ NO CSS transition — GSAP animates hover */
 }
 
-/* Best repo — gold border */
 .repo-card[data-tier="best"] {
   border-color: var(--best);
+  background: linear-gradient(135deg, var(--surface) 0%, #1a1810 100%);
 }
 
-/* High repo — muted orange border, with modern-browser color-mix
-   and a hardcoded fallback for older browsers               */
 .repo-card[data-tier="high"] {
-  border-color: #7a4a2f;                                         /* fallback */
-  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  border-color: #3a2820;
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border2));
 }
 
 .repo-header {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.repo-name-row {
+  display: flex;
+  align-items: center;
   gap: 8px;
-  margin-bottom: 10px;
+}
+
+.repo-tier-icon {
+  font-size: 14px;
 }
 
 .repo-header h3 {
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 15px;
   font-weight: 600;
   color: var(--text);
-  word-break: break-word;
 }
 
 .stars {
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 12px;
   color: var(--best);
   white-space: nowrap;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .repo-card > p {
   font-size: 13px;
   color: var(--muted);
-  line-height: 1.65;
-  margin-bottom: 14px;
+  line-height: 1.7;
+  flex: 1;
 }
 
 .tags {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 16px;
 }
 
 .tags span {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
-  padding: 3px 8px;
-  border-radius: 3px;
+  padding: 3px 9px;
+  border-radius: 4px;
   background: var(--surface2);
   color: var(--muted);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border2);
 }
 
 .repo-link {
@@ -316,60 +406,56 @@ body {
   font-size: 12px;
   color: var(--accent);
   text-decoration: none;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: auto;
+  width: fit-content;
 }
-
 .repo-link:hover { text-decoration: underline; }
 
-/* ─── SCROLLBAR (optional polish) ───────────────────── */
-::-webkit-scrollbar { width: 6px; }
+/* ─── FOOTER ─────────────────────────────────────────── */
+#footer {
+  text-align: center;
+  padding: 32px 8vw;
+  border-top: 1px solid var(--border2);
+  color: var(--muted2);
+  font-size: 13px;
+}
+
+/* ─── SCROLLBAR ──────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
 /* ─── RESPONSIVE ─────────────────────────────────────── */
-@media (max-width: 860px) {
+@media (max-width: 900px) {
+  :root { --mascot: 260px; }
+
   #hero {
-    flex-direction: column;
-    align-items: center;
-    padding: 50px 6vw 40px;
+    grid-template-columns: 1fr;
+    justify-items: center;
     text-align: center;
-    gap: 32px;
+    padding: 60px 6vw 40px;
+    min-height: auto;
+    gap: 40px;
   }
 
-  .tech-tags,
-  .hero-links {
-    justify-content: center;
-  }
+  #mascot-col { order: 1; }
+  #hero-text  { order: 2; align-items: center; }
 
-  /*
-    BUG 8 FIX: On mobile, speech bubble is repositioned
-    ABOVE the mascot via CSS. JS detects mobile and skips
-    the x/scale GSAP transforms that would conflict with
-    this CSS positioning. Only opacity is animated on mobile.
-  */
-  #speech-bubble {
-    left: 50%;
-    top: -72px;
-    transform: translateX(-50%);
-    white-space: normal;
-    max-width: 240px;
-    text-align: left;
-    /* transform-origin irrelevant on mobile since GSAP
-       only animates opacity — no x/scale transform */
-    transform-origin: center bottom;
-  }
+  /* On mobile: bubble above mascot with downward tail — no change needed,
+     already in flow. Just clear the nowrap so it wraps nicely. */
+  #speech-bubble { white-space: normal; max-width: 260px; }
 
-  /* Hide the side-pointing tail on mobile */
-  #speech-bubble::before,
-  #speech-bubble::after {
-    display: none;
-  }
+  .tech-tags, .hero-links { justify-content: center; }
+
+  #hero-text h1 { font-size: 2.4rem; }
 }
 
-@media (max-width: 480px) {
-  :root { --mascot-size: 180px; }
-  #hero { padding: 40px 5vw 30px; }
-  #hero-text h1 { font-size: 2rem; }
+@media (max-width: 560px) {
+  :root { --mascot: 220px; }
   #repos { padding: 40px 5vw 60px; }
   #repo-grid { grid-template-columns: 1fr; }
+  #hero { padding: 40px 5vw 30px; }
 }

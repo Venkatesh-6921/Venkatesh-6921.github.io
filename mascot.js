@@ -205,17 +205,17 @@ function showBubble(msg, duration) {
     gsap.set(bbl(), { display: 'block', opacity: 0, clearProps: 'x,scale' });
     gsap.to(bbl(), { opacity: 1, duration: 0.3, ease: 'power2.out' });
   } else {
-    // Desktop: slide in from left with scale overshoot
+    // Desktop: pop up from below with elastic overshoot
     gsap.set(bbl(), {
       display: 'block',
       opacity: 0,
-      x: -14,
-      scale: 0.86,
-      transformOrigin: 'left center',
+      y: 12,
+      scale: 0.82,
+      transformOrigin: 'center bottom',
     });
     gsap.to(bbl(), {
-      opacity: 1, x: 0, scale: 1,
-      duration: 0.38, ease: 'back.out(1.5)',
+      opacity: 1, y: 0, scale: 1,
+      duration: 0.4, ease: 'back.out(1.6)',
     });
   }
 
@@ -465,10 +465,14 @@ async function loadRepos() {
     card.className    = 'repo-card';
     card.dataset.tier = repo.tier;
     card.setAttribute('role', 'listitem');
+    const tierIcon = repo.tier === 'best' ? '⚡' : repo.tier === 'high' ? '🔥' : '📁';
     card.innerHTML = `
       <div class="repo-header">
-        <h3 class="mono">${repo.name}</h3>
-        <span class="stars" aria-label="${repo.stars} stars">⭐ ${repo.stars}</span>
+        <div class="repo-name-row">
+          <span class="repo-tier-icon">${tierIcon}</span>
+          <h3>${repo.name}</h3>
+        </div>
+        <span class="stars" aria-label="${repo.stars} stars">★ ${repo.stars}</span>
       </div>
       <p>${repo.description}</p>
       <div class="tags" aria-label="Technologies">
