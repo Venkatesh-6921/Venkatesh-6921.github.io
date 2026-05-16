@@ -20,7 +20,9 @@
   --muted2:    #8b949e;
   --green:     #1a7f37;
   --radius:    12px;
-  --mascot:    160px;
+  --mascot:    140px;
+  --sprite-w:  192px;
+  --sprite-h:  32px;
 }
 
 /* ─── RESET ──────────────────────────────────────────── */
@@ -116,11 +118,9 @@ body {
   /* ⚠️ NO CSS transforms — GSAP owns this */
 }
 
-#mascot-img {
+#mascot-canvas {
   width: var(--mascot);
   height: var(--mascot);
-  object-fit: contain;
-  display: block;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   user-select: none;
@@ -338,17 +338,52 @@ body {
   gap: 12px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
   transition: box-shadow 0.25s ease;
+  position: relative;
+  overflow: hidden;
   /* ⚠️ NO CSS transition on transform — GSAP animates hover */
 }
+
+/* Activity bar at top of card */
+.repo-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+.repo-card[data-activity="high"]::before { background: var(--green); }
+.repo-card[data-activity="mid"]::before { background: var(--accent); }
+.repo-card[data-activity="low"]::before { background: var(--muted2); }
 
 .repo-card[data-tier="best"] {
   border-color: var(--best);
   background: linear-gradient(135deg, var(--surface) 0%, #fef9ed 100%);
   box-shadow: 0 2px 8px rgba(212,160,23,0.10), 0 1px 3px rgba(0,0,0,0.04);
 }
+.repo-card[data-tier="best"][data-activity="high"] {
+  border-color: var(--green);
+  background: linear-gradient(135deg, var(--surface) 0%, #f0faf2 100%);
+}
 
 .repo-card[data-tier="high"] {
   border-color: color-mix(in srgb, var(--accent) 25%, var(--border2));
+}
+
+.repo-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--muted2);
+}
+.repo-meta .lang-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
 }
 
 .repo-header {
@@ -384,6 +419,16 @@ body {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.updated {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--muted2);
+}
+
+.repo-card.updated-hover {
+  border-color: var(--green);
 }
 
 .repo-card > p {
